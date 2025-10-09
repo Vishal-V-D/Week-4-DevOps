@@ -1,0 +1,25 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files, which contain real infrastructure state and possibly secrets
+*.tfstate
+*.tfstate.*
+
+# Crash logs
+crash.log
+
+# Override files created by some editors or tools
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Backup files created by Terraform automatically
+*.tfbackup
+
+# Sensitive files you may have locally (like .env)
+.env
