@@ -1,27 +1,52 @@
 module "s3_cloudfront" {
   source = "./modules/s3_cloudfront"
-
-  bucket_name = "smart-learning-platform-frontend"
-
+  bucket_name = "smart-learning-frontend-dev"
   tags = {
-    Name  = "Smart-Learning-Platform"
+    Name  = "smart-learning-frontend-dev"
     scope = "PPI"
+  }
+}
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
   }
 }
 
 module "rds" {
   source = "./modules/rds"
-
-  db_user_username   = var.db_user_username
-  db_course_username = var.db_course_username
-
-  vpc_id     = var.vpc_id
-  subnet_ids = var.subnet_ids
-
-  allowed_cidr_blocks = var.allowed_cidr_blocks
-
+  db_name             = "myapp_db_dev"
+  db_username         = "admin"
+  db_engine           = "mysql"
+  db_engine_version   = "8.0.43"
+  db_instance_class   = "db.t3.micro"
+  allocated_storage   = 20
+  multi_az                 = false
+  backup_retention_period  = 7
+  publicly_accessible      = true
+  skip_final_snapshot      = true
+  vpc_id      = data.aws_vpc.default.id
+  subnet_ids  = data.aws_subnets.default.ids
+  allowed_cidr_blocks = ["0.0.0.0/0"]
   tags = {
-    Name  = "Smart-Learning-Platform-RDS"
-    scope = "PPI"
+    Name        = "myapp-db-dev"
+    scope       = "PPI"
+    Service     = "shared-database"
+    Environment = "Development"
   }
 }
+
+
+module "ecr_backend" {
+  source      = "./modules/ecr"
+  environment = var.environment
+  tags = {
+    owner = "team-ppi"
+  }
+}
+
