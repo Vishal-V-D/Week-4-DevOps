@@ -41,12 +41,12 @@ variable "assign_public_ip" {
 
 variable "user_container_port" {
   type    = number
-  default = 8081
+  default = 5000
 }
 
 variable "course_container_port" {
   type    = number
-  default = 8082
+  default = 4000
 }
 
 
@@ -69,4 +69,49 @@ variable "course_secret_vars" {
     name      = string
     valueFrom = string
   }))
+}
+
+variable "rds_secret_arn" {
+  description = "ARN of the RDS secret in Secrets Manager"
+  type        = string
+}
+
+variable "user_env_vars" {
+  description = "Environment variables for the user service"
+  type        = list(object({
+    name  = string
+    value = string
+  }))
+}
+
+variable "course_env_vars" {
+  description = "Environment variables for the course service"
+  type        = list(object({
+    name  = string
+    value = string
+  }))
+}
+
+variable "user_tg_arn" {
+  description = "Target group ARN for user service"
+  type        = string
+  default     = null
+}
+
+variable "course_tg_arn" {
+  description = "Target group ARN for course service"
+  type        = string
+  default     = null
+}
+
+variable "enable_alb" {
+  description = "Whether to attach ECS service to ALB target groups"
+  type        = bool
+  default     = false
+}
+
+variable "aws_region" {
+  description = "AWS region for CloudWatch logs"
+  type        = string
+  default     = "us-east-1"
 }

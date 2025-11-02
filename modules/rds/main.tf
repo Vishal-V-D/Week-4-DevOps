@@ -34,7 +34,7 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_db_subnet_group" "main" {
-  name_prefix = replace(lower(var.db_name), "_", "-")
+  name = replace(lower(var.db_name), "_", "-")   # fixed name, no suffix
   subnet_ids  = var.subnet_ids
   description = "Subnet group for ${var.db_name}"
   tags        = var.tags

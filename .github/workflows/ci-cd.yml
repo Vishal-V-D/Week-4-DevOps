@@ -1,0 +1,100 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: us-east-1
+      ECR_URL: 071784445140.dkr.ecr.us-east-1.amazonaws.com/smart-learning-backend-dev
+      CLUSTER_NAME: smart-learning-dev
+      SERVICE_NAME: smart-learning-backend-dev
+      TF_DIR: terraform
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # ✅ Configure AWS by OIDC
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::071784445140:role/GithubOIDCRole
+
+      # ✅ Login to ECR
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      ###############################################
+      ###         BUILD + PUSH IMAGES             ###
+      ###############################################
+
+      # ✅ Build user-service
+      - name: Build user-service image
+        run: |
+          cd user-service
+          docker build -t user-service .
+          docker tag user-service:latest $ECR_URL:user-service-latest
+
+      # ✅ Build course-service
+      - name: Build course-service image
+        run: |
+          cd course-service
+          docker build -t course-service .
+          docker tag course-service:latest $ECR_URL:course-service-latest
+
+      # ✅ Push Images
+      - name: Push images
+        run: |
+          docker push $ECR_URL:user-service-latest
+          docker push $ECR_URL:course-service-latest
+
+      ###############################################
+      ###         TERRAFORM DEPLOY                ###
+      ###############################################
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # ✅ Terraform Init
+      - name: Terraform Init
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform init
+
+      # ✅ Terraform Validate
+      - name: Terraform Validate
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform validate
+
+      # ✅ Terraform Plan
+      - name: Terraform Plan
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform plan
+
+      # ✅ Terraform Apply
+        # auto-approve = non-interactive
+      - name: Terraform Apply
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform apply -auto-approve
+
+      ###############################################
+      ###           ECS UPDATE                    ###
+      ###############################################
+
+      - name: ECS Force Redeploy
+        run: |
+          aws ecs update-service \
+            --cluster $CLUSTER_NAME \
+            --service $SERVICE_NAME \
+            --force-new-deployment
