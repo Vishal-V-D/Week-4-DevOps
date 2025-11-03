@@ -52,13 +52,14 @@ resource "aws_lb_target_group" "user_tg" {
   target_type = "ip"
 
   health_check {
-    path                = "/api-docs"
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
-    timeout             = 5
-    interval            = 30
-    matcher             = "200"
-  }
+  path                = "/health"
+  healthy_threshold   = 3
+  unhealthy_threshold = 3
+  timeout             = 5
+  interval            = 30
+  matcher             = "200-399"
+}
+
 
   tags = var.tags
 }
@@ -70,14 +71,15 @@ resource "aws_lb_target_group" "course_tg" {
   vpc_id   = var.vpc_id
   target_type = "ip"
 
-  health_check {
-    path                = "/api-docs"
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
-    timeout             = 5
-    interval            = 30
-    matcher             = "200"
-  }
+health_check {
+  path                = "/health"
+  healthy_threshold   = 3
+  unhealthy_threshold = 3
+  timeout             = 5
+  interval            = 30
+  matcher             = "200-399"
+}
+
 
   tags = var.tags
 }

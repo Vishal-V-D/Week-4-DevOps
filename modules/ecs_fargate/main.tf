@@ -122,13 +122,13 @@ resource "aws_ecs_task_definition" "this" {
       }
 
       # ✅ Container-level health check
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.user_container_port}/api-docs || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 10
-      }
+     healthCheck = {
+  command     = ["CMD-SHELL", "curl -f http://localhost:${var.user_container_port}/health || exit 1"]
+  interval    = 30
+  timeout     = 5
+  retries     = 3
+  startPeriod = 10
+}
     },
     {
       name  = "course-service"
@@ -152,13 +152,13 @@ resource "aws_ecs_task_definition" "this" {
       }
 
       # ✅ Container-level health check
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.course_container_port}/api-docs || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 10
-      }
+     healthCheck = {
+  command     = ["CMD-SHELL", "curl -f http://localhost:${var.user_container_port}/health || exit 1"]
+  interval    = 30
+  timeout     = 5
+  retries     = 3
+  startPeriod = 10
+}
     }
   ])
 }
